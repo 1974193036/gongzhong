@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>硅谷电影预告片</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <link href="https://cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.js"></script>
+    <style>
+    .container {
+        padding: 0;
+    }
+
+    .navbar-brand {
+        color: #fff !important;
+    }
+
+    .btn.my-2.my-sm-0 {
+        color: #fff;
+        border-color: #fff;
+    }
+
+    .card-text {
+        font-weight: bold;
+    }
+
+    .btn.btn-link {
+        color: #212529;
+        text-decoration: none;
+        padding: 0;
+        margin-left: -.1rem;
+    }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="waiwangurl"><%= waiwangurl %></div>
+    <nav class="navbar navbar-dark bg-dark">
+        <a class="navbar-brand" href="javascript:;">电影首页</a>
+        <form class="form-inline" action="/search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </nav>
+    <div class="row">
+        <div class="col">
+            <div class="card-group">
+                <% data.forEach(function (item, index){ %>
+                <div class="card" style="margin-bottom: 30px">
+                    <img src="<%= item.posterKeyUrl %>" class="card-img-top" alt="..."
+                         data-coverkey="http://pyy3gr84l.bkt.clouddn.com/<%= item.coverKey %>?imageView2/0/format/jpg/q/75"
+                         data-videokey="http://pyy3gr84l.bkt.clouddn.com/<%= item.videoKey %>"
+                         data-id='<%= item.doubanID %>'
+                    >
+                    <div class="card-body">
+                        <h5 class="card-title"><%= item.title %></h5>
+                        <p class="card-text">&nbsp&nbsp&nbsp&nbsp <%= item.summary %></p>
+                    </div>
+
+                    <div class="card-header" id="heading<%= index %>">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                    data-target="#collapse<%= index %>" aria-expanded="false"
+                                    aria-controls="collapse<%= index %>">
+                                点击查看电影详情
+                            </button>
+                        </h2>
+                    </div>
+                    <div id="collapse<%= index %>" class="collapse" aria-labelledby="heading<%= index %>"
+                         data-parent="#accordionExample">
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <li class="list-group-item">导演：<%= item.directors %></li>
+                                <li class="list-group-item">评分：<%= item.rating ? item.rating : '暂无评分' %></li>
+                                <li class="list-group-item">类型：
+                                    <% item.genre.forEach(function(item){ %>
+                                    <%= item %>&nbsp;&nbsp;
+                                    <% }) %>
+                                </li>
+                                <li class="list-group-item">上映时间：<%= item.releaseDate %></li>
+                                <li class="list-group-item">片长：<%= item.runtime %></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted"><%= Math.ceil((Date.now() - item.createTime) / (24 * 3600 * 1000)) %>
+                            天前更新
+                        </small>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--模态框-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <!--//视频-->
+            <div id="dplayer"></div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcss.com/require.js/2.3.6/require.js"></script>
+<script>
+// 性能优化
+/**
+ 1、用户点击视频。第一次创建dp，以后都是切换视频，共用一个dp
+ 2、如果用户多次点击同一个视频，不必切换视频，而是暂停和播放切换。
+ */
+$(function () {
+  var waiwangurl = $('.waiwangurl').html() + '/'
+  var dp = null // 视频播放器对象
+  var lastVideo = null // 记录上一次的视频
+  $('.card-img-top').on('click', function () {
+    // 模态框显示
+    $('#myModal').modal('show')
+    // 获取视频和封面图的链接
+    var video = $(this).data('videokey')   // 通过当前视频链接确定是否是播放的一个视频
+    var cover = $(this).data('coverkey')
+    // 获取当前电影的doubanID
+    var doubanID = $(this).data('id')
+
+    if (!dp) {
+      dp = new DPlayer({
+        container: document.getElementById('dplayer'),
+        video: {
+          url: video,
+          pic: cover,
+          thumbnails: cover
+        },
+        danmaku: { // 可选，显示弹幕，忽略此选项以隐藏弹幕
+          id: doubanID,
+          api: waiwangurl,
+          maximum: 3000,
+          user: 'DIYgod'
+        }
+      })
+    } else {
+      // 是否点击的是同一个视频
+      if (video == lastVideo) {
+        // 播放视频
+        dp.play()
+      } else {
+        // 切换视频
+        dp.switchVideo({
+          url: video,
+          pic: cover,
+          thumbnails: cover
+        }, {
+          id: doubanID,
+          api: waiwangurl,
+          maximum: 3000,
+          user: 'DIYgod'  // 应该获取当前登录的用户
+        })
+      }
+    }
+    // 同步lastVideo
+    lastVideo = video
+  })
+
+  // modal  事件的 监听回调 消失的时候的回调
+  $('#myModal').on('hidden.bs.modal', function (e) {
+    // 暂停播放
+    dp.pause()
+  })
+})
+</script>
+</body>
+</html>
+<script>
+/**
+ 1、加载弹幕
+ 请求地址：https://api.prprpr.me/dplayer/v3/?id=9E2E3368B56CDBB4&max=1000
+ 更改为我们自己自己的地址：http://be6f630a.ngrok.io/v3/?id=9E2E3368B56CDBB4&max=1000
+ v3是指的是路由
+ 方式：GET
+
+ 返回值：我们看下返回值，才知道我们到时候写个服务器的返回值 返回给他什么
+ json字符串
+ {
+     code:'0',
+     data:[
+         [
+             3.3964, 弹幕发送时间，单位s
+             0, 弹幕类型
+             16777215, 弹幕颜色
+             'DIYgod', 弹幕的发送者
+             '1111' 弹幕内容
+         ]
+     ]
+ }
+
+ 2、发送弹幕
+ 请求地址：https://api.prprpr.me/dplayer/v3/
+ 请求方式： POST
+ 请求体参数：
+ author DIYgod  弹幕的发送者
+ color  16777215 弹幕的颜色
+ id  demo 弹幕的id
+ text 123456  弹幕的内容
+ time 0  弹幕的时间
+ type 0  弹幕的类型
+ 保存好这些数据到数据库
+ */
+</script>

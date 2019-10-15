@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>detail</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+<div>
+    <a href="/movie">电影</a>
+    <a href="/search">搜索</a>
+</div>
+<div>
+    <div>名称:<%= data.title %></div>
+    <div>评分：<%= data.rating %></div>
+    <div>片场：<%= data.runtime %></div>
+    <div>类型：
+        <% data.genre.forEach(function (item) {%>
+        <%= item %>
+        <% }) %>
+    </div>
+    <div>导演：<%= data.directors %></div>
+    <div>主演：<%= data.carts %></div>
+    <div>上映时间：<%= data.releaseDate %></div>
+    <div>海报：<img src="<%= data.posterKeyUrl %>"></div>
+    <div>简介：<%= data.summary %></div>
+</div>
+</body>
+</html>

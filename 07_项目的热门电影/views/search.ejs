@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>search</title>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <!--<script src="https://cdn.bootcss.com/zepto/1.0rc1/zepto.min.js"></script>-->
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+    #search {
+        background: red;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        text-decoration: none
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+    }
+
+    .cover {
+        width: 100%;
+        text-align: center;
+    }
+
+    #btn {
+        border: 1px solid #00b600;
+        padding: .4rem;
+        border-radius: 5px;
+        margin-top: 1.5rem;
+        background: #fff;
+        color: #00b600;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .list {
+        box-sizing: border-box;
+        padding: 1rem .5rem;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .list > .item {
+        width: 33.3333%;
+        /*height: 10rem;*/
+        box-sizing: border-box;
+        padding: .5rem .2rem;
+        float: left;
+    }
+
+    .list > .item > a {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .list > .item > a > .cover {
+        width: 100%;
+        height: 7rem;
+    }
+
+    .list > .item > a > .cover > img {
+        display: block;
+        width: 100%;
+        height: 6.5rem;
+    }
+
+    .list > .item > a > .info > h3 {
+        text-align: center;
+        font-size: .6rem;
+        color: #494949;
+    }
+
+    .list > .item > a > .info > .rank {
+        text-align: center;
+        font-size: .6rem;
+        color: #9b9b9b;
+    }
+
+    .page {
+        box-sizing: border-box;
+        padding: 1rem .5rem;
+        width: 100%;
+    }
+
+    .page > .info {
+        width: 100%;
+        height: 7.6rem;
+    }
+
+    .page > .info > .right {
+        float: right;
+        width: 35%;
+    }
+
+    .page > .info > .right > a {
+        display: block;
+        width: 100%;
+    }
+
+    .page > .info > .right > a > img {
+        display: block;
+        width: 100%;
+        height: 7.6rem
+    }
+
+    .page > .info > .left {
+        float: left;
+        width: 56%;
+    }
+
+    .page > .info > .left > p {
+        font-size: .7rem;
+        color: #494949;
+    }
+
+    .page > .info > .left > .rating {
+        margin: .2rem 0 .8rem 0;
+    }
+
+    .page > .info > .left > .meta {
+        font-size: .6rem;
+        line-height: 1.1rem;
+    }
+
+    .page > .info > .left > .rating > span {
+        color: lightgreen;
+        margin: .2rem 0 .8rem 0;
+    }
+
+    .page > .info > .left > .rating > .ratingNum {
+        margin-left: .5rem;
+        color: #aaa;
+    }
+
+    button, h1 {
+        cursor: pointer;
+    }
+    </style>
+</head>
+<body>
+<!--
+    针对iOS公众号页面，点击事件生效需要设置样式cursor: pointer
+    或者使用a标签，button标签，因为他们自带这个样式
+-->
+<h1 id="search" style="font-size: 30px">开始录音</h1>
+<h1 id="shareqq" style="font-size: 30px">分享QQ</h1>
+<div class="timestamp">timestamp:<%= timestamp %></div>
+<div class="noncestr">noncestr:<%= noncestr %></div>
+<div class="signature">signature:<%= signature %></div>
+<div>搜索结果</div>
+<div class="result">none</div>
+<ul class="list">
+    <!--<li class="item">-->
+    <!--<a href="javascript:;">-->
+    <!--<div class="cover">-->
+    <!--<img src="http://py4fl8ys7.bkt.clouddn.com/J8Md1Z3KpK.jpg" alt="">-->
+    <!--</div>-->
+    <!--<div class="info">-->
+    <!--<h3>肖申克的救赎</h3>-->
+    <!--<p class="rank">-->
+    <!--<span>评分:</span>-->
+    <!--<span class="rating">9.6</span>-->
+    <!--</p>-->
+    <!--</div>-->
+    <!--</a>-->
+    <!--</li>-->
+</ul>
+</body>
+</html>
+<script>
+/**
+ * 步骤：
+ * 1.绑定域名
+ *   -在接口测试号页面上填写js安全域名接口
+ * 2.引入JS文件
+ *   -http://res.wx.qq.com/open/js/jweixin-1.4.0.js
+ * 3.通过config接口注入权限验证配置
+ * */
+</script>
+
+
+<script>
+$(function () {
+  wx.config({
+    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+    appId: 'wx8a8012dfba6028f8', // 必填，公众号的唯一标识
+    timestamp: '<%= timestamp %>', // 小写，必填，生成签名的时间戳
+    nonceStr: '<%= noncestr %>', // 小写，必填，生成签名的随机串
+    signature: '<%= signature %>',// 小写，必填，签名
+    jsApiList: [
+      // 'onMenuShareTimeline',// 即将废弃，获取“分享到朋友圈”按钮点击状态及自定义分享内容接口
+      'onMenuShareQQ', // 即将废弃
+      // 'onMenuShareQZone', // 即将废弃
+      'startRecord',  // 开始录音
+      'stopRecord', // 结束录音
+      'translateVoice', // 翻译语音
+      'updateAppMessageShareData', // 自定义“分享给朋友”及“分享到QQ”按钮的分享内容（1.4.0）
+      'updateTimelineShareData' // 自定义“分享到朋友圈”及“分享到QQ空间”按钮的分享内容（1.4.0）
+    ] // 必填，需要使用的JS接口列表
+  })
+
+  // 当你的 config成功后 会触发 ready ，失败触发error,所以你是用微信的那些接口，都放在ready里面
+  wx.ready(function () {
+    console.log('jsapi 认证成功')
+    // 验证接口是否有权限
+    /* wx.checkJsApi({
+      jsApiList: ['onMenuShareQQ', 'startRecord', 'stopRecord', 'translateVoice', 'updateAppMessageShareData', 'updateTimelineShareData'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
+      success: function (res) {
+        console.log(res)
+        // 以键值对的形式返回，可用的api值true，不可用为false
+        // 如：{"checkResult":{"chooseImage":true},"errMsg":"checkJsApi:ok"}
+      }
+    }) */
+
+    /** 语音识别接口 */
+    var isRecord = false // 设置标志位 ，是否录音中
+    $('#search').on('click', function () {
+      // -------测试post请求----------
+        //      var url = '/api/getyuyinList'
+        //      $.ajax({
+        //        type: 'POST',
+        //        url: url,
+        //        dataType: 'json',
+        //        data: {
+        //          name: '中国机长'
+        //        },
+        //        success: function (res) {
+        //          console.log(res)
+        //        },
+        //        error: function (res) {
+        //          console.log(res)
+        //        }
+        //      })
+
+      // -------测试get请求-------
+        //      var url = '/api/getyuyinList/中国机长'
+        //      $.ajax({
+        //        url: url,
+        //        type: 'GET',
+        //        success: function (res) {
+        //          var html = ''
+        //          var { title, doubanID, image, summary, posterKey } = res[0]
+        //          html += `<li class="item">
+        //                                     <a href="javascript:;">
+        //                                         <div class="cover">
+        //                                             <img src="http://pyy3gr84l.bkt.clouddn.com/${posterKey}" alt="">
+        //                                         </div>
+        //                                         <div class="info">
+        //                                             <h3>${title}</h3>
+        //                                             <p class="rank">
+        //                                                 <span>豆瓣ID:</span>
+        //                                                 <span class="rating">${doubanID}</span>
+        //                                             </p>
+        //                                             <p class="rank">
+        //                                                 <span>简介:</span>
+        //                                                 <span class="rating">${summary}</span>
+        //                                             </p>
+        //                                         </div>
+        //                                     </a>
+        //                                 </li>`
+        //          $('.list').html(html)
+        //        },
+        //        error: function (res) {
+        //          console.log(res)
+        //        }
+        //      })
+
+
+     if (!isRecord) {
+        // 开始录音
+        wx.startRecord()
+        isRecord = true
+        $(this).html('停止录音')
+      } else {
+        wx.stopRecord({
+          success: function (res) {
+            // res = {errMsg: "stopRecord:ok", localId: "wxLocalResource://voiceLocalId1234567890123"}
+            var localId = res.localId
+            // 将录音转换为文字，（该接口可能无法使用, // 现在语音识别，需要权限开启，暂时没法用）
+            /*wx.translateVoice({
+              localId: localId, // 需要识别的音频的本地Id，由录音相关接口获得
+              isShowProgressTips: 1, // 默认为1，显示进度提示
+              success: function (res) {
+                alert(res.translateResult) // 语音识别的结果
+              }
+            })*/
+            // 模拟结果 --- 查询电影
+            var url = '<%= url %>/api/getyuyinList/中国机长'
+            $.ajax({
+              url: url,
+              methods: 'GET',
+              success: function (res) {
+                console.log(res)
+                $('.list').html(JSON.stringify(res))
+              },
+              error: function (res) {
+                console.log(res)
+              }
+            })
+            // $('#list').html('localId=' + localId)
+          }
+        })
+        isRecord = false
+        $(this).html('开始录音')
+      }
+    });
+
+    /** 自定义分享到qq的内容
+     *  不会主动操作分享 而是获取设置的内容 用户操作分享就发送了设置的内容
+     * */
+    $('#shareqq').on('click', function () {
+      console.log('click qq share')
+      wx.updateAppMessageShareData({
+        // wx.onMenuShareQQ({
+        title: '分享的标题测试', // 分享标题
+        desc: '分享描述', // 分享描述
+        link: 'http://6eeba20b.ngrok.io/search', // 分享链接
+        imgUrl: 'http://pyy3gr84l.bkt.clouddn.com/0bwgSjHEcS.jpg?imageView2/0/format/jpg/q/75', // 分享图标
+        success: function () {
+          // 用户确认分享后执行的回调函数
+          alert('分享成功')
+        },
+        cancel: function () {
+          // 用户取消分享后执行的回调函数
+          alert('用户取消分享，分享失败')
+        }
+      })
+    })
+  });
+
+
+  // 验证失败，可以返回404 或者错误信息
+  wx.error(function (res) {
+    alert('jsapi 认证失败')
+    console.log(res)
+    // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+  });
+
+})
+</script>

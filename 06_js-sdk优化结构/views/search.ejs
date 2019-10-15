@@ -1,0 +1,144 @@
+<!DOCTYPE>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>search</title>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script src="https://cdn.bootcss.com/zepto/1.0rc1/zepto.min.js"></script>
+</head>
+<body>
+<div>这是一个搜索页面</div>
+<h1><%= signature %></h1>
+<h1><%= noncestr %></h1>
+<h1><%= timestamp %></h1>
+
+<h1 id="search">开始录音</h1>
+<h1 id="shareqq">分享QQ</h1>
+<h2 id="list"></h2>
+<script>
+$(function () {
+  wx.config({
+    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+    appId: 'wx8a8012dfba6028f8', // 必填，公众号的唯一标识
+    timestamp: '<%= timestamp %>', // 小写，必填，生成签名的时间戳
+    nonceStr: '<%= noncestr %>', // 小写，必填，生成签名的随机串
+    signature: '<%= signature %>',// 小写，必填，签名
+    jsApiList: [
+      // 'onMenuShareTimeline',// 即将废弃，获取“分享到朋友圈”按钮点击状态及自定义分享内容接口
+      // 'onMenuShareQQ', // 即将废弃
+      // 'onMenuShareQZone', // 即将废弃
+      'startRecord',  // 开始录音
+      'stopRecord', // 结束录音
+      'translateVoice', // 翻译语音
+      'updateAppMessageShareData', // 自定义“分享给朋友”及“分享到QQ”按钮的分享内容（1.4.0）
+      'updateTimelineShareData' // 自定义“分享到朋友圈”及“分享到QQ空间”按钮的分享内容（1.4.0）
+    ] // 必填，需要使用的JS接口列表
+  })
+
+  // 当你的 config成功后 会触发 ready ，失败触发error,所以你是用微信的那些接口，都放在ready里面
+  wx.ready(function () {
+    console.log('jsapi 认证成功')
+    // 验证接口是否有权限
+    /* wx.checkJsApi({
+      jsApiList: ['startRecord', 'stopRecord', 'translateVoice', 'updateAppMessageShareData', 'updateTimelineShareData'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
+      success: function (res) {
+        // console.log(res)
+        // 以键值对的形式返回，可用的api值true，不可用为false
+        // 如：{"checkResult":{"chooseImage":true},"errMsg":"checkJsApi:ok"}
+      }
+    }) */
+
+    /** 语音识别接口 */
+    var isRecord = false // 设置标志位 ，是否录音中
+    $('#search').on('tap', function () {
+      console.log('click search btn')
+      if (!isRecord) {
+        // 开始录音
+        wx.startRecord()
+        isRecord = true
+        $(this).html('停止录音')
+      } else {
+        wx.stopRecord({
+          success: function (res) {
+            // res = {errMsg: "stopRecord:ok", localId: "wxLocalResource://voiceLocalId1234567890123"}
+            var localId = res.localId
+            // 将录音转换为文字，（该接口可能无法使用）
+            /*wx.translateVoice({
+              localId: localId, // 需要识别的音频的本地Id，由录音相关接口获得
+              isShowProgressTips: 1, // 默认为1，显示进度提示
+              success: function (res) {
+                alert(res.translateResult) // 语音识别的结果
+              }
+            })*/
+            // 模拟结果 --- 查询电影
+            // 在douban 搜索电影结果（豆瓣接口也废了）
+            // https://api.douban.com/v2/movie/search?q=西虹市首富   || tag='喜剧'  || start  count
+            /* const url = 'https://api.douban.com/v2/movie/search?callback=?&q=西虹市首富'
+             $.getJSON(url, function (data) {
+              alert(JSON.stringify(data))
+             })
+            $.ajax({
+              type: 'GET',
+              url: url,
+              dataType: 'jsonp',
+              success: function (data) {
+                console.log('success')
+                console.log(data)
+              },
+              error: function (err) {
+                console.log('error')
+                console.log(err)
+              }
+            }) */
+            $('#list').html('localId=' + localId)
+          }
+        })
+        isRecord = false
+        $(this).html('开始录音')
+      }
+    })
+
+    /** 分享到qq接口 */
+    $('#shareqq').on('click',function () {
+      wx.updateAppMessageShareData({
+        title: '分享的标题测试', // 分享标题
+        desc: '分享描述', // 分享描述
+        link: 'https://www.baidu.com/', // 分享链接
+        imgUrl: 'https://ss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/super/pic/item/1ad5ad6eddc451daba33b647b8fd5266d1163250.jpg', // 分享图标
+        success: function () {
+          // 用户确认分享后执行的回调函数
+          alert('分享成功')
+        },
+        cancel: function () {
+          // 用户取消分享后执行的回调函数
+          alert('用户取消分享，分享失败')
+        }
+      })
+    })
+  })
+
+
+  // 验证失败，可以返回404 或者错误信息
+  wx.error(function (res) {
+    console.log('jsapi 认证失败')
+    console.log(res)
+    // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+  })
+})
+</script>
+
+</body>
+</html>
+<script>
+/**
+ * 步骤：
+ * 1.绑定域名
+ *   -在接口测试号页面上填写js安全域名接口
+ * 2.引入JS文件
+ *   -http://res.wx.qq.com/open/js/jweixin-1.4.0.js
+ * 3.通过config接口注入权限验证配置
+ * */
+</script>
+
+
